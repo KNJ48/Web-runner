@@ -1,315 +1,510 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Web Runner</title>
 
-<link rel="stylesheet"
- href="https://cdn.jsdelivr.net/npm/@xterm/xterm/css/xterm.css">
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+ name="viewport"
+ content="width=device-width,initial-scale=1"
+>
+
+<title>Localhost Runner</title>
+
+<link
+ rel="stylesheet"
+ href="https://cdn.jsdelivr.net/npm/@xterm/xterm/css/xterm.css"
+>
 
 <style>
+
 * {
     box-sizing: border-box;
 }
 
 body {
     margin: 0;
-    font-family: system-ui, sans-serif;
-    background: #111318;
+    background: #101216;
     color: #eee;
+    font-family: system-ui, sans-serif;
 }
 
 main {
-    max-width: 1100px;
+    width: min(1200px, 96%);
     margin: auto;
-    padding: 25px;
-}
-
-h1 {
-    margin-top: 0;
+    padding: 25px 0;
 }
 
 .card {
-    background: #1b1e25;
-    padding: 18px;
-    border-radius: 12px;
+    background: #1b1e24;
+    padding: 16px;
     margin-bottom: 15px;
-}
-
-#drop {
-    border: 2px dashed #596275;
-    padding: 35px;
-    text-align: center;
     border-radius: 10px;
-    cursor: pointer;
-}
-
-#drop.drag {
-    border-color: #55aaff;
-    background: #182535;
 }
 
 input, button {
-    background: #252933;
-    color: white;
-    border: 1px solid #414756;
-    border-radius: 7px;
     padding: 10px;
-}
-
-#command {
-    width: 70%;
+    border: 1px solid #454b58;
+    border-radius: 6px;
+    background: #262a33;
+    color: white;
 }
 
 button {
     cursor: pointer;
 }
 
-button:hover {
-    background: #333947;
-}
-
-.run {
-    background: #176c3a;
-}
-
-.stop {
-    background: #7a2929;
-}
-
-#terminal {
-    height: 470px;
-    background: #000;
-    padding: 10px;
-    border-radius: 8px;
-}
-
-.auth {
+.auth,
+.controls {
     display: flex;
     gap: 8px;
-    margin-bottom: 10px;
 }
 
 .auth input {
     flex: 1;
 }
 
-.controls {
-    display: flex;
-    gap: 8px;
-}
-
-.controls input {
+#command {
     flex: 1;
 }
 
-#status {
-    color: #aaa;
-    margin-top: 10px;
+#port {
+    width: 100px;
 }
+
+#drop {
+    padding: 40px;
+    border: 2px dashed #566071;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+}
+
+#drop.drag {
+    background: #192b3d;
+    border-color: #4da3ff;
+}
+
+#terminal {
+    height: 300px;
+    background: black;
+    padding: 8px;
+}
+
+iframe {
+    width: 100%;
+    height: 600px;
+    border: 0;
+    background: white;
+}
+
+#status {
+    margin-top: 8px;
+    color: #aaa;
+}
+
 </style>
+
 </head>
 
 <body>
+
 <main>
 
-<h1>Web Runner</h1>
+<h1>Localhost Runner</h1>
 
 <div class="card">
-    <div class="auth">
-        <input id="username" placeholder="Username" value="admin">
-        <input id="password" type="password" placeholder="Password">
-        <button onclick="connect()">Connect</button>
-    </div>
 
-    <div id="status">Not connected</div>
+<div class="auth">
+
+<input
+ id="username"
+ value="admin"
+ placeholder="Username"
+>
+
+<input
+ id="password"
+ type="password"
+ placeholder="Password"
+>
+
+<button onclick="connect()">
+Connect
+</button>
+
 </div>
+
+<div id="status">
+Disconnected
+</div>
+
+</div>
+
 
 <div class="card">
-    <div id="drop">
-        📁 Drop a project folder here
-        <br>
-        <small>or click to choose files</small>
-    </div>
 
-    <input id="files" type="file" webkitdirectory multiple hidden>
+<div id="drop">
+
+📁 Drop project folder here
+
+<br>
+
+<small>
+or click to select
+</small>
+
 </div>
 
-<div class="card controls">
-    <input
-        id="command"
-        value="python main.py"
-        placeholder="python main.py"
-    >
+<input
+ id="picker"
+ type="file"
+ webkitdirectory
+ multiple
+ hidden
+>
 
-    <button class="run" onclick="run()">▶ Run</button>
-    <button class="stop" onclick="stop()">■ Stop</button>
-    <button onclick="clearWorkspace()">Clear</button>
 </div>
+
 
 <div class="card">
-    <div id="terminal"></div>
+
+<div class="controls">
+
+<input
+ id="command"
+ value="python -m http.server 8000 --bind 127.0.0.1"
+>
+
+<input
+ id="port"
+ type="number"
+ value="8000"
+>
+
+<button onclick="run()">
+▶ Run
+</button>
+
+<button onclick="stop()">
+■ Stop
+</button>
+
+<button onclick="preview()">
+🌐 Preview
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div id="terminal"></div>
+
+</div>
+
+
+<div class="card">
+
+<h3>Preview</h3>
+
+<iframe
+ id="preview"
+ sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin"
+></iframe>
+
 </div>
 
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm/lib/xterm.js"></script>
+
+<script
+ src="https://cdn.jsdelivr.net/npm/@xterm/xterm/lib/xterm.js">
+</script>
+
 
 <script>
+
 const term = new Terminal({
     cursorBlink: true,
     convertEol: true,
-    fontSize: 14,
-    theme: {
-        background: "#000000"
-    }
+    fontSize: 14
 });
 
-term.open(document.getElementById("terminal"));
-term.writeln("Web Runner");
-term.writeln("Connect to start.\r\n");
+term.open(
+    document.getElementById("terminal")
+);
 
 let ws = null;
 let connected = false;
 
-function send(obj) {
+
+function send(data) {
+
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-        term.writeln("\r\nNot connected.");
+
+        term.writeln(
+            "\r\nNot connected."
+        );
+
         return;
     }
 
-    ws.send(JSON.stringify(obj));
+    ws.send(
+        JSON.stringify(data)
+    );
 }
+
 
 function connect() {
-    if (ws) {
-        try { ws.close(); } catch {}
-    }
 
     const protocol =
-        location.protocol === "https:" ? "wss:" : "ws:";
+        location.protocol === "https:"
+        ? "wss:"
+        : "ws:";
 
     ws = new WebSocket(
-        protocol + "//" + location.host + "/terminal"
+        protocol +
+        "//" +
+        location.host +
+        "/terminal"
     );
 
-    document.getElementById("status").textContent =
-        "Connecting...";
+    document.getElementById(
+        "status"
+    ).textContent = "Connecting...";
+
 
     ws.onopen = () => {
+
         send({
+
             type: "auth",
-            username: document.getElementById("username").value,
-            password: document.getElementById("password").value
+
+            username:
+                document.getElementById(
+                    "username"
+                ).value,
+
+            password:
+                document.getElementById(
+                    "password"
+                ).value
+
         });
+
     };
+
 
     ws.onmessage = event => {
-        const msg = JSON.parse(event.data);
 
-        if (msg.type === "ready") {
+        const message =
+            JSON.parse(event.data);
+
+
+        if (message.type === "ready") {
+
             connected = true;
-            document.getElementById("status").textContent =
-                "Connected";
-            term.write(msg.data);
+
+            document.getElementById(
+                "status"
+            ).textContent = "Connected";
+
+            term.write(message.data);
+
         }
 
-        if (msg.type === "output") {
-            term.write(msg.data);
+
+        if (message.type === "output") {
+
+            term.write(message.data);
+
         }
 
-        if (msg.type === "error") {
-            term.writeln("\r\nERROR: " + msg.data);
+
+        if (message.type === "error") {
+
+            term.writeln(
+                "\r\nERROR: " +
+                message.data
+            );
+
         }
+
     };
+
 
     ws.onclose = () => {
+
         connected = false;
-        document.getElementById("status").textContent =
-            "Disconnected";
+
+        document.getElementById(
+            "status"
+        ).textContent = "Disconnected";
+
     };
+
 }
 
-async function uploadFiles(fileList) {
+
+async function upload(files) {
+
     if (!connected) {
-        term.writeln("\r\nConnect first.");
+
+        term.writeln(
+            "\r\nConnect first."
+        );
+
         return;
     }
 
-    const files = [];
 
-    for (const file of fileList) {
-        const buffer = await file.arrayBuffer();
-        const bytes = new Uint8Array(buffer);
+    const output = [];
+
+
+    for (const file of files) {
+
+        const buffer =
+            await file.arrayBuffer();
+
+        const bytes =
+            new Uint8Array(buffer);
 
         let binary = "";
 
-        for (let i = 0; i < bytes.length; i++) {
-            binary += String.fromCharCode(bytes[i]);
+
+        for (
+            let i = 0;
+            i < bytes.length;
+            i++
+        ) {
+
+            binary +=
+                String.fromCharCode(
+                    bytes[i]
+                );
+
         }
 
-        files.push({
-            path: file.webkitRelativePath || file.name,
-            data: btoa(binary)
+
+        output.push({
+
+            path:
+                file.webkitRelativePath
+                || file.name,
+
+            data:
+                btoa(binary)
+
         });
+
     }
 
+
     send({
+
         type: "upload",
-        files
+        files: output
+
     });
+
 }
+
 
 function run() {
+
     send({
+
         type: "run",
-        command: document.getElementById("command").value
+
+        command:
+            document.getElementById(
+                "command"
+            ).value,
+
+        port:
+            Number(
+                document.getElementById(
+                    "port"
+                ).value
+            )
+
     });
+
 }
+
 
 function stop() {
-    send({ type: "stop" });
+
+    send({
+        type: "stop"
+    });
+
 }
 
-function clearWorkspace() {
-    send({ type: "clear" });
-    term.clear();
+
+function preview() {
+
+    const frame =
+        document.getElementById(
+            "preview"
+        );
+
+    frame.src =
+        "/preview/?t=" +
+        Date.now();
+
 }
 
-const drop = document.getElementById("drop");
-const picker = document.getElementById("files");
 
-drop.onclick = () => picker.click();
+const drop =
+    document.getElementById("drop");
 
-picker.onchange = () => uploadFiles(picker.files);
+const picker =
+    document.getElementById("picker");
 
-drop.ondragover = e => {
-    e.preventDefault();
+
+drop.onclick = () =>
+    picker.click();
+
+
+picker.onchange = () =>
+    upload(picker.files);
+
+
+drop.ondragover = event => {
+
+    event.preventDefault();
+
     drop.classList.add("drag");
+
 };
+
 
 drop.ondragleave = () => {
-    drop.classList.remove("drag");
-};
 
-drop.ondrop = async e => {
-    e.preventDefault();
     drop.classList.remove("drag");
 
-    // Most Chromium browsers preserve relative paths when
-    // choosing a directory. Dropped directories have less
-    // consistent cross-browser behavior.
-    if (e.dataTransfer.files.length) {
-        await uploadFiles(e.dataTransfer.files);
-    }
 };
 
-document.getElementById("command")
-    .addEventListener("keydown", e => {
-        if (e.key === "Enter") run();
-    });
+
+drop.ondrop = event => {
+
+    event.preventDefault();
+
+    drop.classList.remove("drag");
+
+    upload(
+        event.dataTransfer.files
+    );
+
+};
+
 </script>
 
 </body>
+
 </html>
